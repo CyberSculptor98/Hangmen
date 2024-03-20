@@ -1,0 +1,154 @@
+#!/bin/bash
+
+
+
+WORDLIST="/usr/share/dict/words"
+
+
+
+# Funktion, um zufälliges Wort aus der Wortliste auszuwählen
+
+get_random_word() {
+
+    shuf -n 1 "$WORDLIST"
+
+}
+
+
+
+# Funktion, um das Spiel zu initialisieren
+
+initialize_game() {
+
+    clear
+
+    echo "Willkommen zu Hangman!"
+
+    echo "Errate das Wort, indem du Buchstaben eingibst. Du hast 10 Versuche."
+
+    echo "Viel Spaß!"
+
+    sleep 2
+
+    clear
+
+}
+
+
+
+# Funktion, um das Spiel zu spielen
+
+play_game() {
+
+    local word="$1"
+
+    local guessed=""
+
+    local attempts=10
+
+    local hidden_word=""
+
+
+
+    # Verstecktes Wort vorbereiten
+
+    for ((i=0; i<${#word}; i++)); do
+
+        hidden_word+="_ "
+
+    done
+
+
+
+    # Hauptschleife des Spiels
+
+    while [[ $attempts -gt 0 && "$hidden_word" != "$word" ]]; do
+
+        echo "Wort: $hidden_word"
+
+        echo "Versuche übrig: $attempts"
+
+
+
+        read -p "Gib einen Buchstaben ein: " guess
+
+
+
+        # Überprüfe, ob der Buchstabe bereits geraten wurde
+
+        if [[ "${guessed}" =~ "${guess}" ]]; then
+
+            echo "Du hast diesen Buchstaben bereits geraten. Versuche es erneut."
+
+            continue
+
+        fi
+
+
+
+        guessed+="$guess"
+
+
+
+        # Überprüfe, ob der Buchstabe im Wort enthalten ist
+
+        if [[ "$word" == *"$guess"* ]]; then
+
+            for ((i=0; i<${#word}; i++)); do
+
+                if [[ "${word:$i:1}" == "$guess" ]]; then
+
+                    hidden_word="${hidden_word:0:$((i*2))}$guess ${hidden_word:$((i*2+2))}"
+
+                fi
+
+            done
+
+        else
+
+            ((attempts--))
+
+            echo "Falsch! Versuche es erneut."
+
+        fi
+
+        clear
+
+    done
+
+
+
+    # Spiel beenden
+
+    if [[ "$hidden_word" == "$word" ]]; then
+
+        echo "Glückwunsch! Du hast das Wort '$word' erraten!"
+
+    else
+
+        echo "Das Wort war '$word'. Du hast verloren!"
+
+    fi
+
+}
+
+
+
+# Hauptfunktion
+
+main() {
+
+    initialize_game
+
+    random_word=$(get_random_word)
+
+    play_game "$random_word"
+
+}
+
+
+
+# Hauptprogramm aufrufen
+
+main
+
